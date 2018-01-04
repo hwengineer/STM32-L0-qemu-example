@@ -1,12 +1,27 @@
 #include "main.h"
 
+#include "arm_semi.h"
+
 void LED_Init(void);
 void SysTick_Handler(void);
 int  main(void);
 
 int main(void) {
+
   HAL_Init();
   LED_Init();
+
+  // semihost_putc('k');
+  // semihost_puts("test");
+  // semihost_angleSWIreason_ReportException(ADP_Stopped_ApplicationExit);
+
+
+  // SYS_WRITEC('\n');
+  // SYS_WRITE0("this is a string\n");
+
+  arm_semi_syswritec('\n');
+  arm_semi_syswritec('a');
+  arm_semi_syswrite0("this is a string\n");
 
   while (1)
   {

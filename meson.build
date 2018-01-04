@@ -5,20 +5,28 @@ project('blink', 'c',
 # Initialize some globals
 srcs          = []
 incdirs       = []
-compilerArgs  = []
+c_args        = []
 linkArgs      = []
 linkDeps      = []
 
+if get_option('buildtype') == 'release'
+  c_args += '-DNDEBUG'
+else
+  c_args += '-DDEBUG'
+endif
+
 #==============================================================================#
-# Add source files
-add_global_arguments('-DSTM32L0',        language : 'c')
-add_global_arguments('-DSTM32L072xx',    language : 'c')
-add_global_arguments('-DUSE_HAL_DRIVER', language : 'c')
-add_global_arguments('-DUSE_LEGACY',     language : 'c')
+# Add global arguments
+c_args += '-DSTM32L0'
+c_args += '-DSTM32L072xx'
+c_args += '-DUSE_HAL_DRIVER'
+c_args += '-DUSE_LEGACY'
 
 #==============================================================================#
 # Add source files
-srcs += files(['main.c','STM32-startup/stm32l072xx.s',])
+subdir('src')
+# Add startup file
+# srcs += files('STM32-startup/stm32l072xx.s')
 
 #==============================================================================#
 # Add linker files
@@ -29,44 +37,34 @@ foreach linkfile : linkfiles
 endforeach
 
 #==============================================================================#
-
-# add cpu specific compiler args (without hard fpu support  options)
 if host_machine.cpu() == 'cortex-m0'
-    add_global_arguments('-mcpu=cortex-m0',      language : 'c')
+    # linkDeps +=  meson.get_compiler('c').find_library('/usr/lib/gcc/arm-none-eabi/4.9.3/armv6-m/libgcc')
 elif host_machine.cpu() == 'cortex-m0+'
-    add_global_arguments('-mcpu=cortex-m0plus',  language : 'c')
+    linkDeps +=  meson.get_compiler('c').find_library('/usr/lib/gcc/arm-none-eabi/4.9.3/armv6-m/libgcc')
 elif host_machine.cpu() == 'cortex-m1'
-    add_global_arguments('-mcpu=cortex-m1',      language : 'c')
+    # linkDeps +=  meson.get_compiler('c').find_library('/usr/lib/gcc/arm-none-eabi/4.9.3/armv6-m/libgcc')
 elif host_machine.cpu() == 'cortex-m3'
-    add_global_arguments('-mcpu=cortex-m3',      language : 'c')
+    # linkDeps +=  meson.get_compiler('c').find_library('/usr/lib/gcc/arm-none-eabi/4.9.3/armv6-m/libgcc')
 elif host_machine.cpu() == 'cortex-m4'
-    add_global_arguments('-mcpu=cortex-m4',      language : 'c')
+    # linkDeps +=  meson.get_compiler('c').find_library('/usr/lib/gcc/arm-none-eabi/4.9.3/armv6-m/libgcc')
 elif host_machine.cpu() == 'cortex-m7'
-    add_global_arguments('-mcpu=cortex-m7',      language : 'c')
+    # linkDeps +=  meson.get_compiler('c').find_library('/usr/lib/gcc/arm-none-eabi/4.9.3/armv6-m/libgcc')
 endif
-
-# define target
-add_global_arguments('--target=arm-none-eabi',language : 'c')
-# define language
-add_global_arguments('-mthumb',language : 'c')
 
 #==============================================================================#
 # optimizer Level
-  add_global_arguments('-Og',            language : 'c')
-  add_global_arguments('-g3',            language : 'c')
+  # add_global_arguments('-Og',            language : 'c') # unnecessary
+  # add_global_arguments('-g3',            language : 'c') # unnecessary
   # add_global_arguments('-gdwarf-5',      language : 'c')
 #==============================================================================#
 
 if meson.get_compiler('c').get_id() == 'clang'
-  # extra verbose output
-  add_global_arguments('-v',    language : 'c')
 
   # bare-metal : stdlink includes
   incdirs += include_directories('/usr/lib/arm-none-eabi/include/')
 
   # /usr/lib/gcc/arm-none-eabi/4.9.3/armv6-m/
   # eventuell hier isystem oder isysroot???
-
 endif
 
 #==============================================================================#
@@ -89,23 +87,76 @@ if meson.get_cross_property('newlib_nano') == true
 endif
 
 #==============================================================================#
-linkDeps +=  meson.get_compiler('c').find_library('/usr/lib/gcc/arm-none-eabi/4.9.3/armv6-m/libgcc')
+# add tests
+subdir('tests')
 
 #==============================================================================#
 main = executable(
             'main.elf',
-            [srcs, stm32cube_srcs] ,
-            c_args              : compilerArgs,
-            link_args           : linkArgs,
+            [srcs, stm32cube_srcs, 'main.c', 'STM32-startup/stm32l072xx.s'] ,
+            c_args              : [c_args ],
+            link_args           : [linkArgs, '-Wl,--gc-sections'],
             dependencies        : linkDeps,
             include_directories : [incdirs, stm32cube_incdirs] )
 
 #==============================================================================#
+# define qemu machine simulation => for tests
 
-objcopy = '@0@'.format(find_program('objcopy').path())
-objdump = '@0@'.format(find_program('objdump').path())
-size    = '@0@'.format(find_program('size').path())
-gdb     = '@0@'.format(find_program('gdb').path())
+# qemulinkfiles = files(['STM32-ldscripts/qemu-cortex-m3.ld', 'STM32-ldscripts/simple.ld'])
+# link_qemuArgs = []
+#
+# foreach linkfile : qemulinkfiles
+#  link_qemuArgs += ['-Wl,-T,@0@/@1@'.format(meson.current_source_dir(), linkfile)]
+# endforeach
+#
+# qemu_args     = ['-machine' ,'lm3s811evb', '-cpu' ,'cortex-m3', '-semihosting', '-nographic',]
+#
+# e_test = executable(
+#           'test.elf',
+#           ['STM32-startup/qemu-cortex-m3.s', 'tests/helloWorld.c',  stm32cube_srcs, srcs] ,
+#           #c_args              : [c_args , '-mcpu=cortex-m3'],
+#           c_args              : [c_args],
+#           link_args           : [link_qemuArgs, '-Wl,--gc-sections'],
+#           dependencies        : linkDeps,
+#           include_directories : [incdirs, stm32cube_incdirs])
+#
+# # e_test = executable(
+# #           'test.elf',
+# #           ['tests/helloWorld.c', 'STM32-startup/qemu-cortex-m0plus.s', stm32cube_srcs, srcs] ,
+# #           c_args              : compilerArgs,
+# #           link_args           : linkArgs,
+# #           dependencies        : linkDeps,
+# #           include_directories : [incdirs, stm32cube_incdirs])
+#
+# # e_test = executable(
+# #           'test.elf',
+# #           ['tests/helloWorld.c', 'STM32-startup/qemu-cortex-m3.s', srcs] ,
+# #           c_args              : compilerArgs,
+# #           link_args           : link_qemuArgs,
+# #           dependencies        : linkDeps,
+# #           include_directories : [incdirs])
+#
+# # message(e_test.full_path())
+# # exe='-kernel '+e_test.full_path()
+# # message('-kernel '+e_test.full_path())
+# #
+# #
+# test(  'name of test',
+#        e_test,
+#        args : qemu_args,
+#        timeout: 2)
+
+#==============================================================================#
+# import binary objects
+objcopy  = '@0@'.format(find_program('objcopy').path())
+objdump  = '@0@'.format(find_program('objdump').path())
+size     = '@0@'.format(find_program('size').path())
+gdb      = '@0@'.format(find_program('gdb').path())
+terminal = '@0@'.format(find_program('terminal').path())
+openocd  = '@0@'.format(find_program('openocd').path())
+
+#==============================================================================#
+# create custom target : create binary, hex dump, size and disassemble dump
 
 mainbin = custom_target(
                         'main.bin',
@@ -133,14 +184,16 @@ maindump = custom_target(
                         'dump',
       capture          : true,
       output           : ['main.dump'],
-      command          : [objdump, '-D', 'main.elf', '>', 'main.dump'],
+      command          : [objdump, '-triple=thumbv6m-none-eabi', '-disassemble-all', '-S', '-t', 'main.elf', '>', 'main.dump'],
       depends          : [main])
 
-# run_target('gdb',
-#         command : [gdb , '-q' , '@0@/main.elf'.format(meson.current_build_dir())])
+#==============================================================================#
+# support target commands
+run_target('gdb',
+         command : [terminal, '-e', gdb, '-q', '@0@/main.elf'.format(meson.current_build_dir())])
 
-# start openocd 10 /usr/local/bin/openocd -f interface/stlink-v2-1.cfg -f target/stm32l0.cfg
-# llvm-objdump-5.0 -triple=thumbv6m-none-eabi -disassemble-all -S -t main.elf > main.dump
+run_target('openocd',
+         command : [terminal, '-e', openocd, '-f', 'interface/stlink-v2-1.cfg', '-f' , 'target/stm32l0.cfg'])
 
 #==============================================================================#
 

@@ -1,7 +1,7 @@
 [binaries]
 c       = 'clang-5.0'
 cpp     = 'clang++-5.0'
-ld      = 'llvm-link-5.0'
+ld      = 'ld.lld-5.0'
 ar      = 'llvm-ar-5.0'
 as      = 'llvm-as-5.0'
 size    = 'llvm-size-5.0'
@@ -9,9 +9,40 @@ objdump = 'llvm-objdump-5.0'
 objcopy = 'arm-none-eabi-objcopy'
 strip   = 'arm-none-eabi-strip'
 gdb     = 'arm-none-eabi-gdb'
+terminal= 'x-terminal-emulator'
+openocd = '/usr/local/bin/openocd'
+
+#exe_wrapper = 'qemu-system-arm'
+exe_wrapper = 'meson_exe_wrapper.sh'
+
+# http://mesonbuild.com/Unit-tests.html
+# http://mesonbuild.com/Cross-compilation.html
+# http://cgi.cs.indiana.edu/~geobrown/stm32/Main/Simulation
+# https://balau82.wordpress.com/2010/11/04/qemu-arm-semihosting/
+# https://sushihangover.github.io/arm-cortex-m-semihosting-with-qemu/
+# http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0471c/Bgbjjgij.html
+# http://infocenter.arm.com/help/topic/com.arm.doc.dui0471c/DUI0471C_developing_for_arm_processors.pdf
+
+# http://lists.llvm.org/pipermail/llvm-dev/2017-August/116134.html
+# http://llvm.1065342.n5.nabble.com/llvm-dev-Cross-compiling-for-Baremetal-ARM-without-using-GCC-td114673.html
+# https://github.com/sushihangover/llvm_baremetal
+
+
+# http://mesonbuild.com/Generating-sources.html
 
 [properties]
 c_args      = [
+               '--target=arm-none-eabi',    # define target for clang
+               '-mthumb',                   # define language
+               #------------------------------------
+               # should match with host machine!
+               #'-mcpu=cortex-m0',           # define cpu
+               '-mcpu=cortex-m0plus',        # define cpu => should match with host machine!
+               #'-mcpu=cortex-m1',           # define cpu
+               #'-mcpu=cortex-m3',           # define cpu
+               #'-mcpu=cortex-m4',           # define cpu
+               #------------------------------------
+
                '-fshort-enums',             # otherwise errors at linking...
                '-fmessage-length=0',        # all error warnings in a single line (default 72)
                '-fsigned-char',             # char is per default unsigned
@@ -39,18 +70,20 @@ c_args      = [
                '-Wno-switch-enum',
                '-Wno-missing-variable-declarations',
                #------------------------------------
+
+               # '-emit-llvm', # creates segfault : need further inspection
+               '-v', # option for more verbose output
                ]
 
 c_link_args = [
                '--target=arm-none-eabi', # define target for linker
+               '-v',                     # option for more verbose output
+                '-nostdlib',             # do not import the standard library's
 
-               '-Wl,-Map,output.map',    # create linker map file
-               '-Wl,--as-needed',        # linker optimasation
-               '-Wl,--gc-sections',      # needed for optimization
+               # '-Wl,-Map,output.map',    # create linker map file
+               # '-Wl,--as-needed',        # linker optimisation
+               # '-Wl,--gc-sections',      # needed for optimization
                #'-flto',
-
-               '-nostdlib',
-               # '-nostdlibinc',
               ]
 
 # doesnt work at the moment
