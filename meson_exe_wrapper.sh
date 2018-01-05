@@ -1,8 +1,8 @@
 #!/bin/sh
 if [ $# = 1 ]; then
-  out=$(qemu-system-arm -version)
-  exit $out
+  qemu-system-arm -version
+  exit $?
 else
-  out=$(qemu-system-arm -kernel "$@")
-  exit $out
+  qemu-system-arm -kernel "$@"
+  exit $?
 fi
