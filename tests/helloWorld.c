@@ -1,4 +1,6 @@
 #include <stdint.h>
+
+#define DEBUG // to use ARM_Semihosting only in testing
 #include "arm_semi.h"
 
 int  main(void);
