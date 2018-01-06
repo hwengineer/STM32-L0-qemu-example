@@ -13,8 +13,8 @@ link_deps     = []
 #==============================================================================#
 # uController / HAL Driver dependend options
 c_args     += '-DSTM32L072xx' # HAL Driver define
-linkfiles   = files(['STM32-ldscripts/STM32L072CZ.ld', 'STM32-ldscripts/simple.ld'])
-startupfile = files(['STM32-startup/stm32l072xx.s'])
+linkfiles   = files(['STM32-ldscripts/STM32L0/STM32L072CZ.ld', 'STM32-ldscripts/simple.ld'])
+startupfile = files(['STM32-startup/STM32L0/stm32l072xx.s'])
 
 #==============================================================================#
 # convenience function : get correct -mcpu flag depending on hostmachine
