@@ -12,21 +12,7 @@ gdb     = 'arm-none-eabi-gdb'
 terminal= 'x-terminal-emulator'
 openocd = '/usr/local/bin/openocd'
 
-#exe_wrapper = 'qemu-system-arm'
 exe_wrapper = 'meson_exe_wrapper.sh'
-
-# http://mesonbuild.com/Unit-tests.html
-# http://mesonbuild.com/Cross-compilation.html
-# http://cgi.cs.indiana.edu/~geobrown/stm32/Main/Simulation
-# https://balau82.wordpress.com/2010/11/04/qemu-arm-semihosting/
-# https://sushihangover.github.io/arm-cortex-m-semihosting-with-qemu/
-# http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0471c/Bgbjjgij.html
-# http://infocenter.arm.com/help/topic/com.arm.doc.dui0471c/DUI0471C_developing_for_arm_processors.pdf
-
-# http://lists.llvm.org/pipermail/llvm-dev/2017-August/116134.html
-# http://llvm.1065342.n5.nabble.com/llvm-dev-Cross-compiling-for-Baremetal-ARM-without-using-GCC-td114673.html
-# https://github.com/sushihangover/llvm_baremetal
-
 
 [properties]
 c_args      = [

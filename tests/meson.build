@@ -3,7 +3,7 @@
 #==============================================================================#
 # define qemu machine : cortex-m3 is a superset of the cortex-m0 / 0+ / 1
 # so its also suitable as a qemu host
-# qemu_args        = ['-machine' ,'lm3s811evb', '-cpu' ,'cortex-m3', '-semihosting', '-nographic','-no-reboot']
+
 qemu_args        = ['-machine' ,'lm3s811evb', '-cpu' ,'cortex-m3', '-semihosting', '-nographic']
 qemu_startupfile = files([meson.source_root() + '/STM32-startup/qemu-cortex-m3.s'])
 qemu_linkfiles   = files([meson.source_root() + '/STM32-ldscripts/qemu-cortex-m3.ld', meson.source_root() + '/STM32-ldscripts/simple.ld'])
